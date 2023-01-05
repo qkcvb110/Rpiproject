@@ -6,19 +6,41 @@ def main():
     PWMpin= 12
     GPIO.setmode(GPIO.BOARD) 
     GPIO.setup(PWMpin, GPIO.OUT) 
+    GPIO.setwarnings(False)
+
+    seg = [40,38,32,26,24,22,18,36] # GPIO pin
+    GPIO.setup(seg, GPIO.OUT, initial=GPIO.LOW)
+
+    fnd = [(1,1,1,1,1,0,1,0), #0
+        (0,1,1,0,0,0,0,0), #1
+        (1,1,0,1,1,1,0,0), #2
+        (1,1,1,1,0,1,0,0), #3 
+        (0,1,1,0,0,1,1,0), #4
+        (1,0,1,1,0,1,1,0), #5
+        (1,0,1,1,1,1,1,0), #6
+        (1,1,1,0,0,0,1,0), #7
+        (1,1,1,1,1,1,1,0), #8
+        (1,1,1,0,0,1,1,0), #9
+        (1,1,1,1,1,0,1,0), #1
+        (0,1,1,0,0,0,0,0), #2
+        (1,1,0,1,1,1,0,0)] #3
+
     Servo=GPIO.PWM(PWMpin, 50) 
     Servo.start(0)
     print('Wating for 1 sec') 
     time.sleep(1) 
     #print('Rotating at interval of 0-12 degrees’)
     while duty_ratio <= MaxDuty:
+        duty_ratio= int(input('Enter Brightness (0~12):'))
         Servo.ChangeDutyCycle(duty_ratio)
-        time.sleep(2)
-        duty_ratio= input('Enter Brightness (6):')
-        Servo.ChangeDutyCycle(duty_ratio)
-    if duty_ratio > MaxDuty:
-        duty_ratio= 0
-        Servo.ChangeDutyCycle(duty_ratio)
+        GPIO.output(seg,fnd[duty_ratio])
+       
+
+        if duty_ratio > MaxDuty:
+            duty_ratio= 0
+            Servo.ChangeDutyCycle(duty_ratio)
+            GPIO.output(seg,fnd[duty_ratio])
+        
 
     Servo.stop()
     GPIO.cleanup()
