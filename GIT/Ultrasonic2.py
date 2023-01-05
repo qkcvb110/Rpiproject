@@ -1,8 +1,6 @@
+import smbus
 import RPi.GPIO as GPIO 
 import time
-import I2C_driver
-import smbus
-
 # Define some device parameters
 I2C_ADDR = 0x27 # I2C device address
 LCD_WIDTH = 16 # Maximum characters per line
@@ -57,54 +55,37 @@ def lcd_string(message,line):
         lcd_byte(ord(message[i]),LCD_CHR)
 
 def main():
-    duty_ratio= 0
-    MaxDuty= 12
-    PWMpin= 12
+    PinTrig=29
+    PinEcho=31
     GPIO.setmode(GPIO.BOARD) 
-    GPIO.setup(PWMpin, GPIO.OUT) 
-    GPIO.setwarnings(False)
+    GPIO.setup(PinTrig, GPIO.OUT) 
+    GPIO.setup(PinEcho, GPIO.IN)
 
-    seg = [40,38,32,26,24,22,18,36] # GPIO pin
-    GPIO.setup(seg, GPIO.OUT, initial=GPIO.LOW)
-    mylcd = I2C_driver.lcd()
-
-    fnd = [(1,1,1,1,1,0,1,0), #0
-        (0,1,1,0,0,0,0,0), #1
-        (1,1,0,1,1,1,0,0), #2
-        (1,1,1,1,0,1,0,0), #3 
-        (0,1,1,0,0,1,1,0), #4
-        (1,0,1,1,0,1,1,0), #5
-        (1,0,1,1,1,1,1,0), #6
-        (1,1,1,0,0,0,1,0), #7
-        (1,1,1,1,1,1,1,0), #8
-        (1,1,1,0,0,1,1,0), #9
-        (1,1,1,1,1,0,1,0), #1
-        (0,1,1,0,0,0,0,0), #2
-        (1,1,0,1,1,1,0,0)] #3
-
-    Servo=GPIO.PWM(PWMpin, 50) 
-    Servo.start(0)
-    print('Wating for 1 sec') 
-    time.sleep(1) 
-    #print('Rotating at interval of 0-12 degrees’)
-    while duty_ratio <= MaxDuty:
-        duty_ratio= int(input('Enter Brightness (0~12):'))
-        cvtnum= str(duty_ratio)
-        Servo.ChangeDutyCycle(duty_ratio)
-        GPIO.output(seg,fnd[duty_ratio])
-        mylcd.lcd_display_string(cvtnum, 1)
-        mylcd.lcd_display_string("Kang Min Sung", 2)
-        #mylcd.lcd_clear()
-
-        if duty_ratio > MaxDuty:
-            duty_ratio= 0
-            Servo.ChangeDutyCycle(duty_ratio)
-            GPIO.output(seg,fnd[duty_ratio])
-        
-
-    Servo.stop()
+    startTime=0
+    stopTime=0
+# Main program block
+# Initialise display
+    lcd_init()
+    while True:
+        GPIO.output(PinTrig, False) 
+        time.sleep(2)
+        # Send some test
+        lcd_string('Distance.',LCD_LINE_1)
+        GPIO.output(PinTrig, True) 
+        time.sleep(0.00001) 
+        GPIO.output(PinTrig, False) 
+        while GPIO.input(PinEcho) == 0: 
+            startTime = time.time()
+        while GPIO.input(PinEcho) == 1: 
+            stopTime = time.time()
+        Time_interval= stopTime - startTime
+        Distance = Time_interval * 17000
+        cvtnum= str(Distance)
+        lcd_string(cvtnum,LCD_LINE_2)
     GPIO.cleanup()
-    print('Everythings cleanup')
+        # Send some more text
+       
+      
 if __name__ == '__main__':
     try:
         main()
@@ -112,3 +93,4 @@ if __name__ == '__main__':
         pass
     finally:
         lcd_byte(0x01, LCD_CMD)
+
