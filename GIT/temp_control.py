@@ -1,6 +1,7 @@
 import smbus
 import RPi.GPIO as GPIO 
 import time
+from Adafruit_BME280 import *
 
 
 PinTrig=29
@@ -67,6 +68,14 @@ def lcd_string(message,line):
         lcd_byte(ord(message[i]),LCD_CHR)
 
 def main():
+    sensor = BME280(t_mode=BME280_OSAMPLE_8, p_mode=BME280_OSAMPLE_8, h_mode=BME280_OSAMPLE_8)
+
+    degrees = sensor.read_temperature()
+    degree = str(degrees)
+    pascals = sensor.read_pressure()
+    hectopascals = pascals / 100
+    humidity = sensor.read_humidity()
+
     seg = [40,38,32,26,24,22,18,36] # GPIO pin
     GPIO.setup(seg, GPIO.OUT, initial=GPIO.LOW)
 
@@ -94,6 +103,9 @@ def main():
 # Initialise display
     lcd_init()
     while True:
+        degrees = sensor.read_temperature()
+        degree = str(degrees)
+        print ('Temp      = {0:0.3f} deg C'.format(degrees))
         GPIO.output(PinTrig, False) 
         time.sleep(2)
         # Send some test
@@ -110,17 +122,26 @@ def main():
         Distance = round(Distance, 1)
         len = str(Distance)
         cvtnum= 'distance:' + len +'cm'
-        lcd_string(cvtnum,LCD_LINE_2)
-        if Distance < 5 :
-            lcd_string('Open door',LCD_LINE_1)
+        lcd_string(degree,LCD_LINE_2)
+        if degrees > 25 :
+            lcd_string('fan on',LCD_LINE_1)
             Servo.ChangeDutyCycle(12)
-            list_num= [3, 2, 1, 0]
-            for i in list_num:
-                GPIO.output(seg,fnd[i])
-                time.sleep(1)
-            #time.sleep(3)       
-        if Distance >= 5 :
-            lcd_string('Close door',LCD_LINE_1)
+            list_Num= [12, 1, 12, 1]
+            while 1 :
+                list_num= [9, 1, 9, 1]
+                for i in list_num:
+                    GPIO.output(seg,fnd[i])
+                    time.sleep(1)
+                for a in list_Num:
+                    Servo.ChangeDutyCycle(a)
+                    time.sleep(0.5)
+                #list_num= [9, 13, 9, 13]
+                # for i in list_num:
+                #     GPIO.output(seg,fnd[i])
+                #     time.sleep(0.3)
+                # #time.sleep(3)       
+        if degrees <= 25 :
+            lcd_string('fan off',LCD_LINE_1)
             Servo.ChangeDutyCycle(1)
             time.sleep(1)
             
