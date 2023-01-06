@@ -1,6 +1,17 @@
 import smbus
 import RPi.GPIO as GPIO 
 import time
+
+PinTrig=29
+PinEcho=31
+duty_ratio= 0
+MaxDuty= 12
+PWMpin= 12
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(PinTrig, GPIO.OUT) 
+GPIO.setup(PinEcho, GPIO.IN)
+GPIO.setwarnings(False)
+GPIO.setup(PWMpin, GPIO.OUT) 
 # Define some device parameters
 I2C_ADDR = 0x27 # I2C device address
 LCD_WIDTH = 16 # Maximum characters per line
@@ -55,11 +66,26 @@ def lcd_string(message,line):
         lcd_byte(ord(message[i]),LCD_CHR)
 
 def main():
+    seg = [40,38,32,26,24,22,18,36] # GPIO pin
+    GPIO.setup(seg, GPIO.OUT, initial=GPIO.LOW)
+
+    fnd = [(1,1,1,1,1,0,1,0), #0
+        (0,1,1,0,0,0,0,0), #1
+        (1,1,0,1,1,1,0,0), #2
+        (1,1,1,1,0,1,0,0), #3 
+        (0,1,1,0,0,1,1,0), #4
+        (1,0,1,1,0,1,1,0), #5
+        (1,0,1,1,1,1,1,0), #6
+        (1,1,1,0,0,0,1,0), #7
+        (1,1,1,1,1,1,1,0), #8
+        (1,1,1,0,0,1,1,0)] #9
     PinTrig=29
     PinEcho=31
-    GPIO.setmode(GPIO.BOARD) 
-    GPIO.setup(PinTrig, GPIO.OUT) 
-    GPIO.setup(PinEcho, GPIO.IN)
+    duty_ratio= 0
+    MaxDuty= 12
+    PWMpin= 12
+    Servo=GPIO.PWM(PWMpin, 50) 
+    Servo.start(0)
 
     startTime=0
     stopTime=0
@@ -80,9 +106,23 @@ def main():
             stopTime = time.time()
         Time_interval= stopTime - startTime
         Distance = Time_interval * 17000
-        Distance = round(Distance, 2)
-        cvtnum= str(Distance)
+        Distance = round(Distance, 1)
+        len = str(Distance)
+        cvtnum= 'distance:' + len +'cm'
         lcd_string(cvtnum,LCD_LINE_2)
+        if Distance < 5 :
+            lcd_string('Open door',LCD_LINE_1)
+            Servo.ChangeDutyCycle(12)
+            list_num= [3, 2, 1, 0]
+            for i in list_num:
+                GPIO.output(seg,fnd[i])
+                time.sleep(1)
+            #time.sleep(3)       
+        if Distance >= 5 :
+            lcd_string('Close door',LCD_LINE_1)
+            Servo.ChangeDutyCycle(1)
+            time.sleep(1)
+            
     GPIO.cleanup()
         # Send some more text
        
