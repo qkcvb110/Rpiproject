@@ -53,13 +53,13 @@ def main():
         Distance = Time_interval * 1700000
         Distance = round(Distance)
         print ('Distance => ', Distance, 'mm')
-        print (int(math.floor(Distance%10)))
+        # print (int(math.floor(Distance%10)))
+        # print (int(math.floor((Distance/10)%10)))
+        # print (int(math.floor((Distance/100)%10)))
+        # print (int(math.floor((Distance/1000)%10)))
         D4=int(math.floor(Distance%10))
-        print (int(math.floor((Distance/10)%10)))
         D3=int(math.floor((Distance/10)%10))
-        print (int(math.floor((Distance/100)%10)))
         D2=int(math.floor((Distance/100)%10))
-        print (int(math.floor((Distance/1000)%10)))
         D1=int(math.floor((Distance/1000)%10))
         # a = []
         # for i in str(Distance):
@@ -67,7 +67,7 @@ def main():
         #     #print(a)
         #     print(i)
         if(Distance):
-            for i in range(1, 100000000000000000000000000000000000000000000): 
+            for i in range(1000):
                 GPIO.output(com1,GPIO.HIGH)
                 GPIO.output(seg,fnd[D1])
                 time.sleep(0.0000000001)
@@ -84,7 +84,6 @@ def main():
                 GPIO.output(seg,fnd[D4])
                 time.sleep(0.0000000001)
                 GPIO.output(com4,GPIO.LOW)
-                break
             
     GPIO.cleanup()
 if __name__ == '__main__':
