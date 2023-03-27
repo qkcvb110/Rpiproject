@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "if.h": "c",
+        "socket.h": "c"
+    },
+    "C_Cpp.dimInactiveRegions": false
+}

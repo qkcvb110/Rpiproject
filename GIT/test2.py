@@ -1,29 +1,21 @@
-
-import RPi.GPIO as GPIO
-
+import can
 import time
+# create a bus instance
+# many other interfaces are supported as well (see documentation)
+bus = can.Bus(interface='socketcan',
+              channel='can0',
+              receive_own_messages=True)
 
-GPIO.setmode(GPIO.BOARD)
-GPIO.setwarnings(False)
-
-LED1 = 11
-LED2 = 12
-LED3 = 13
-Led= [LED1,LED2,LED3]
-# GPIO.setup(LED1, GPIO.OUT, initial=GPIO.LOW)
-# GPIO.setup(LED2, GPIO.OUT, initial=GPIO.LOW)
-# GPIO.setup(LED3, GPIO.OUT, initial=GPIO.LOW)
-GPIO.setup(Led, GPIO.OUT, initial=GPIO.LOW)
+# send a message
+message = can.Message(arbitration_id=0x11, is_extended_id=False,
+ 
+                      data=[0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38])
 while 1:
-    GPIO.output(LED1, GPIO.HIGH)
-    time.sleep(1)   
-    GPIO.output(LED1, GPIO.LOW)
-    time.sleep(1)  
-    GPIO.output(LED2, GPIO.HIGH)
+    bus.send(message, timeout=0.2)
     time.sleep(1)
-    GPIO.output(LED2, GPIO.LOW)
-    time.sleep(1)  
-    GPIO.output(LED3, GPIO.HIGH)
-    time.sleep(1)
-    GPIO.output(LED3, GPIO.LOW)
-    time.sleep(1)
+# iterate over received messages
+for msg in bus:
+    print(f"{msg.arbitration_id:X}: {msg.data}")
+
+# or use an asynchronous notifier
+notifier = can.Notifier(bus, [can.Logger("recorded.log"), can.Printer()])

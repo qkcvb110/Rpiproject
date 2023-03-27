@@ -1,7 +1,6 @@
-list_num= [0,1,2,3,4,5,6,7,8,9]
+a = 1234
+print(a%10)
+print((a/10)%10)
+print((a/100)%10)
+print((a/1000)%10)
 
-# for i in range(0, 10, 3):
-    # print(i, end='')
-
-for i in list_num:
-    print(i,end='')
